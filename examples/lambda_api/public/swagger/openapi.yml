@@ -1,0 +1,285 @@
+components:
+  schemas:
+    Entry:
+      properties:
+        duration:
+          example: '0:00:00.013737'
+          type: string
+        status:
+          example: healthy
+          type: string
+        tags:
+          items:
+            example: db
+            type: string
+          type: array
+      type: object
+    EntryData:
+      properties:
+        name:
+          $ref: '#/components/schemas/Entry'
+      type: object
+    Event:
+      properties:
+        data:
+          type: object
+        date:
+          example: '2021-05-03T19:41:36.315842-03:00'
+          format: date-time
+          type: string
+        hash:
+          example: 406cce9743906f7b8d7dd5d5c5d8c95d820eeefd72a3a554a4a726d022d8fa19
+          type: string
+        type:
+          type: string
+      type: object
+    EventCreateErrorResponse:
+      properties:
+        code:
+          example: 105
+          type: integer
+        event_hash:
+          example: null
+          type: string
+        label:
+          example: common.error.event_type_unknown_error
+          type: string
+        message:
+          example: 'Event type unknown: (%s)'
+          type: string
+        params:
+          items:
+            type: string
+          type: array
+        result:
+          example: false
+          type: boolean
+      type: object
+    EventCreateRequest:
+      properties:
+        chavenfe:
+          example: '32210206107255000134550010001712551245826554'
+          type: string
+        ocor:
+          example: MOTIVO DO CANCELAMENTO
+          type: string
+        origem:
+          example: SAC/EAGLE
+          type: string
+        pedido:
+          example: Z1223321
+          type: string
+      type: object
+    EventCreateResponse:
+      properties:
+        code:
+          example: 102
+          type: integer
+        event_hash:
+          example: c82bf3ee20dd2f4ae7109e52d313a3190f1a85ba3362c54d3eb6257bd0c4d69d
+          type: string
+        label:
+          example: common.event_registered_with_success
+          type: string
+        message:
+          example: Event registered with success
+          type: string
+        params:
+          items:
+            type: string
+          type: array
+        result:
+          example: true
+          type: boolean
+      type: object
+    EventListErrorResponse:
+      properties:
+        code:
+          example: 7
+          type: integer
+        details:
+          type: string
+        label:
+          example: common.error.internal_server_error
+          type: string
+        message:
+          example: Internal Server Error
+          type: string
+        params:
+          items:
+            type: string
+          type: array
+        success:
+          example: false
+          type: boolean
+        trace:
+          type: string
+      required:
+      - code
+      type: object
+    EventListResponse:
+      properties:
+        code:
+          example: 1
+          type: integer
+        control:
+          $ref: '#/components/schemas/RequestControl'
+        data:
+          items:
+            $ref: '#/components/schemas/Event'
+          type: array
+        label:
+          example: common.success
+          type: string
+        links:
+          items:
+            $ref: '#/components/schemas/Link'
+          type: array
+        message:
+          example: Success
+          type: string
+        meta:
+          $ref: '#/components/schemas/Meta'
+        params:
+          items:
+            type: string
+          type: array
+        success:
+          example: true
+          type: boolean
+      required:
+      - code
+      type: object
+    HealthCheck:
+      properties:
+        entries:
+          $ref: '#/components/schemas/EntryData'
+        status:
+          example: healthy
+          type: string
+        total_duration:
+          example: '0:00:00.013737'
+          type: string
+      type: object
+    Link:
+      properties:
+        href:
+          type: string
+        method:
+          type: string
+        rel:
+          type: string
+      type: object
+    Meta:
+      properties:
+        first:
+          format: url
+          type: string
+        href:
+          format: url
+          type: string
+        last:
+          format: url
+          type: string
+        next:
+          format: url
+          type: string
+        previous:
+          format: url
+          type: string
+      type: object
+    RequestControl:
+      properties:
+        count:
+          type: integer
+        limit:
+          type: integer
+        offset:
+          type: integer
+        total:
+          type: integer
+      required:
+      - limit
+      type: object
+info:
+  title: template-serverless-lambda-python-lambda-api
+  version: 1.0.1
+openapi: 3.0.2
+paths:
+  /alive:
+    get:
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthCheck'
+          description: Success response
+        '424':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthCheck'
+          description: Failed dependency response
+        '503':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthCheck'
+          description: Service unavailable response
+      summary: Service Health Method
+  /v1/event/{event_type}:
+    get:
+      parameters:
+      - description: Event type
+        in: path
+        name: event_type
+        required: true
+        schema:
+          example: ocoren-event
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EventListResponse'
+        4xx:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EventListErrorResponse'
+      summary: List event
+    post:
+      parameters:
+      - description: Event type
+        in: path
+        name: event_type
+        required: true
+        schema:
+          example: ocoren-event
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EventCreateRequest'
+        description: Event to be created
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EventCreateResponse'
+        4xx:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EventCreateErrorResponse'
+      summary: Create event
+servers:
+- description: Development server
+  url: http://localhost:5000
+- description: Development server
+  url: http://localhost:5000
